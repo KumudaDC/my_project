@@ -27,37 +27,39 @@ jobs:
 
       - name: Configure Snowflake connection
         env:
+          SF_ACCOUNT: ${{ secrets.SF_ACCOUNT }}
+          SF_USERNAME: github_workflow_user
+          SF_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
+          SF_DATABASE: ${{ secrets.SF_DATABASE }}
+          # Decode and set the private key
           SNOWFLAKE_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
         run: |
-          echo "Decoding and exporting the private key"
-          echo $SF_PRIVATE_KEY | base64 --decode > private_key.pem
-          echo "SNOWFLAKE_PRIVATE_KEY_PATH=private_key.pem" >> $GITHUB_ENV
-          # If your private key is encrypted, provide the passphrase as well
-          # echo "SNOWFLAKE_PRIVATE_KEY_PASSPHRASE=${{ secrets.SNOWFLAKE_PRIVATE_KEY_PASSPHRASE }}" >> $GITHUB_ENV
-
-      - name: Debug Environment Variables
-        run: |
-          echo "SF_PRIVATE_KEY_PATH: $SNOWFLAKE_PRIVATE_KEY_PATH"
-          echo "SNOWFLAKE_PRIVATE_KEY_PASSPHRASE: $SNOWFLAKE_PRIVATE_KEY_PASSPHRASE"
-          echo "SF_ROLE: ${{ secrets.SF_ROLE }}"
+          echo "Step 1: Decoding and exporting the private key"
+          echo $SNOWFLAKE_PRIVATE_KEY | base64 --decode > rsa_key.p8
+          
+          # Export environment variables for Snowflake Python connector
+          export SNOWFLAKE_PRIVATE_KEY_PATH=$(pwd)/rsa_key.p8
 
       - name: Run schemachange with key pair authentication
         env:
-          SF_PRIVATE_KEY_PATH: ${{ env.SF_PRIVATE_KEY_PATH }}
-          SNOWFLAKE_PRIVATE_KEY_PASSPHRASE: ${{ secrets.SNOWFLAKE_PRIVATE_KEY_PASSPHRASE }} # Comment out if not used
+          SF_ACCOUNT: ${{ secrets.SF_ACCOUNT }}
+          SF_USERNAME: github_workflow_user
+          SF_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
+          SF_DATABASE: ${{ secrets.SF_DATABASE }}
+          SF_ROLE: ${{ secrets.SF_ROLE }}
+          SNOWFLAKE_PRIVATE_KEY_PATH: ${{ env.SNOWFLAKE_PRIVATE_KEY_PATH }}
         run: |
           echo "Step 2: Running schemachange"
-          schemachange deploy \
-            -f $GITHUB_WORKSPACE/migrations \
-            -a ${{ secrets.SF_ACCOUNT }} \
-            -u ${{ secrets.SF_USERNAME }} \
-            -r ${{ secrets.SF_ROLE }} \
-            -w ${{ secrets.SF_WAREHOUSE }} \
-            -d ${{ secrets.SF_DATABASE }} \
-            -s ${{ secrets.SF_SCHEMA }} \
-            -c ${{ secrets.SF_DATABASE }}.SCHEMACHANGE.CHANGE_HISTORY \
-            --create-change-history-table
+          schemachange deploy -f $GITHUB_WORKSPACE/migrations \
+                              -a $SF_ACCOUNT \
+                              -u $SF_USERNAME \
+                              -r $SF_ROLE \
+                              -w $SF_WAREHOUSE \
+                              -d $SF_DATABASE \
+                              -s "" \  # Specify the schema if needed
+                              -c "$SF_DATABASE.SCHEMACHANGE.CHANGE_HISTORY" \
+                              --create-change-history-table
 
       - name: Clean up
         run: |
-          rm private_key.pem
+          rm rsa_key.p8

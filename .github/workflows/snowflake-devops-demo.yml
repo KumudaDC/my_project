@@ -6,7 +6,6 @@ on:
       - main
     paths:
       - 'migrations/**'
-
   workflow_dispatch:
 
 jobs:
@@ -15,12 +14,33 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
-      - name: Use Python 3.8.x
-        uses: actions/setup-python@v2.2.1
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v4
         with:
-          python-version: 3.8.x
+          python-version: 3.8
+
+      - name: Install dependencies
+        run: |
+          pip install schemachange snowflake-connector-python
+
+      - name: Configure Snowflake connection
+        env:
+          SF_ACCOUNT: ${{ secrets.SF_ACCOUNT }}
+          SF_USERNAME: github_workflow_user
+          SF_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
+          SF_DATABASE: ${{ secrets.SF_DATABASE }}
+          # Decode and set the private key
+          SNOWFLAKE_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
+        run: |
+          echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+          
+          echo "Step 1: Decoding and exporting the private key"
+          echo $SNOWFLAKE_PRIVATE_KEY | base64 --decode > private_key.pem
+          
+          # Export environment variables for Snowflake Python connector
+          export SNOWFLAKE_PRIVATE_KEY_PATH=private_key.pem
 
       - name: Run schemachange with key pair authentication
         env:
@@ -28,22 +48,11 @@ jobs:
           SF_USERNAME: github_workflow_user
           SF_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
           SF_DATABASE: ${{ secrets.SF_DATABASE }}
-          # Decode the private key from the base64-encoded string
-          SNOWFLAKE_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
+          SNOWFLAKE_PRIVATE_KEY_PATH: ${{ env.SNOWFLAKE_PRIVATE_KEY_PATH }}
         run: |
-          echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
-          python --version
-          echo "Step 1: Installing schemachange"
-          pip install schemachange
-          
-          echo "Step 2: Decoding and exporting the private key"
-          echo $SNOWFLAKE_PRIVATE_KEY | base64 --decode > private_key.pem
-          
-          # Set up environment variables for Snowflake Python connector
-          export SNOWFLAKE_PRIVATE_KEY_PATH=private_key.pem
-
-          echo "Step 3: Running schemachange"
+          echo "Step 2: Running schemachange"
           schemachange -f $GITHUB_WORKSPACE/migrations -a $SF_ACCOUNT -u $SF_USERNAME -w $SF_WAREHOUSE -d $SF_DATABASE -c $SF_DATABASE.SCHEMACHANGE.CHANGE_HISTORY --create-change-history-table
 
-          echo "Step 4: Cleaning up"
+      - name: Clean up
+        run: |
           rm private_key.pem

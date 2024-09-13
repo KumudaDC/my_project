@@ -30,20 +30,20 @@ jobs:
           SNOWFLAKE_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
         run: |
           echo "Decoding and exporting the private key"
-          echo $SNOWFLAKE_PRIVATE_KEY | base64 --decode > private_key.pem
+          echo $SF_PRIVATE_KEY | base64 --decode > private_key.pem
           echo "SNOWFLAKE_PRIVATE_KEY_PATH=private_key.pem" >> $GITHUB_ENV
           # If your private key is encrypted, provide the passphrase as well
           # echo "SNOWFLAKE_PRIVATE_KEY_PASSPHRASE=${{ secrets.SNOWFLAKE_PRIVATE_KEY_PASSPHRASE }}" >> $GITHUB_ENV
 
       - name: Debug Environment Variables
         run: |
-          echo "SNOWFLAKE_PRIVATE_KEY_PATH: $SNOWFLAKE_PRIVATE_KEY_PATH"
+          echo "SF_PRIVATE_KEY_PATH: $SNOWFLAKE_PRIVATE_KEY_PATH"
           echo "SNOWFLAKE_PRIVATE_KEY_PASSPHRASE: $SNOWFLAKE_PRIVATE_KEY_PASSPHRASE"
           echo "SF_ROLE: ${{ secrets.SF_ROLE }}"
 
       - name: Run schemachange with key pair authentication
         env:
-          SNOWFLAKE_PRIVATE_KEY_PATH: ${{ env.SNOWFLAKE_PRIVATE_KEY_PATH }}
+          SF_PRIVATE_KEY_PATH: ${{ env.SF_PRIVATE_KEY_PATH }}
           SNOWFLAKE_PRIVATE_KEY_PASSPHRASE: ${{ secrets.SNOWFLAKE_PRIVATE_KEY_PASSPHRASE }} # Comment out if not used
         run: |
           echo "Step 2: Running schemachange"

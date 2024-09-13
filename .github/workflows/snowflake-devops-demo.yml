@@ -33,6 +33,7 @@ jobs:
           SF_DATABASE: ${{ secrets.SF_DATABASE }}
           # Decode and set the private key
           SNOWFLAKE_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
+          SNOWFLAKE_PRIVATE_KEY_PASSPHRASE: ${{ secrets.SNOWFLAKE_PRIVATE_KEY_PASSPHRASE }}
         run: |
           echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
           
@@ -41,17 +42,12 @@ jobs:
           
           # Export environment variables for Snowflake Python connector
           export SNOWFLAKE_PRIVATE_KEY_PATH=private_key.pem
+          export SNOWFLAKE_PRIVATE_KEY_PASSPHRASE=$SNOWFLAKE_PRIVATE_KEY_PASSPHRASE
 
       - name: Run schemachange with key pair authentication
-        env:
-          SF_ACCOUNT: ${{ secrets.SF_ACCOUNT }}
-          SF_USERNAME: github_workflow_user
-          SF_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
-          SF_DATABASE: ${{ secrets.SF_DATABASE }}
-          SNOWFLAKE_PRIVATE_KEY_PATH: ${{ env.SNOWFLAKE_PRIVATE_KEY_PATH }}
         run: |
           echo "Step 2: Running schemachange"
-          schemachange -f $GITHUB_WORKSPACE/migrations -a $SF_ACCOUNT -u $SF_USERNAME -w $SF_WAREHOUSE -d $SF_DATABASE -c $SF_DATABASE.SCHEMACHANGE.CHANGE_HISTORY --create-change-history-table
+          schemachange deploy -f $GITHUB_WORKSPACE/migrations -a $SF_ACCOUNT -u $SF_USERNAME -w $SF_WAREHOUSE -d $SF_DATABASE -c $SF_DATABASE.SCHEMACHANGE.CHANGE_HISTORY --create-change-history-table
 
       - name: Clean up
         run: |

@@ -33,6 +33,7 @@ jobs:
           SF_DATABASE: ${{ secrets.SF_DATABASE }}
           SNOWFLAKE_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
           SNOWFLAKE_PRIVATE_KEY_PASSPHRASE: ${{ secrets.SNOWFLAKE_PRIVATE_KEY_PASSPHRASE }}
+          SF_ROLE: ${{ secrets.SF_ROLE }}  # Add the Snowflake role secret
         run: |
           echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
           
@@ -46,18 +47,22 @@ jobs:
           # Debugging: Print environment variables
           echo "SNOWFLAKE_PRIVATE_KEY_PATH: $SNOWFLAKE_PRIVATE_KEY_PATH"
           echo "SNOWFLAKE_PRIVATE_KEY_PASSPHRASE: $SNOWFLAKE_PRIVATE_KEY_PASSPHRASE"
+          echo "SF_ROLE: $SF_ROLE"
 
       - name: Run schemachange with key pair authentication
         env:
           SNOWFLAKE_PRIVATE_KEY_PATH: ${{ env.SNOWFLAKE_PRIVATE_KEY_PATH }}
           SNOWFLAKE_PRIVATE_KEY_PASSPHRASE: ${{ env.SNOWFLAKE_PRIVATE_KEY_PASSPHRASE }}
+          SF_ROLE: ${{ secrets.SF_ROLE }}  # Add the Snowflake role secret
         run: |
           echo "Step 2: Running schemachange"
           schemachange deploy -f $GITHUB_WORKSPACE/migrations \
                               -a "${{ secrets.SF_ACCOUNT }}" \
                               -u "${{ secrets.SF_USERNAME }}" \
+                              -r "${{ secrets.SF_ROLE }}" \  # Specify the role here
                               -w "${{ secrets.SF_WAREHOUSE }}" \
                               -d "${{ secrets.SF_DATABASE }}" \
+                              -s "${{ secrets.SF_SCHEMA }}" \   # Make sure to specify the schema if needed
                               -c "${{ secrets.SF_DATABASE }}.SCHEMACHANGE.CHANGE_HISTORY" \
                               --create-change-history-table
 

@@ -31,13 +31,10 @@ jobs:
           SF_USERNAME: github_workflow_user
           SF_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
           SF_DATABASE: ${{ secrets.SF_DATABASE }}
-          # Decode and set the private key
           SNOWFLAKE_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
         run: |
           echo "Step 1: Decoding and exporting the private key"
           echo $SNOWFLAKE_PRIVATE_KEY | base64 --decode > rsa_key.p8
-          
-          # Export environment variables for Snowflake Python connector
           export SNOWFLAKE_PRIVATE_KEY_PATH=$(pwd)/rsa_key.p8
 
       - name: Run schemachange with key pair authentication
@@ -51,13 +48,13 @@ jobs:
         run: |
           echo "Step 2: Running schemachange"
           schemachange deploy \
+            --config-folder . \
             -f $GITHUB_WORKSPACE/migrations \
             -a $SF_ACCOUNT \
             -u $SF_USERNAME \
             -r $SF_ROLE \
             -w $SF_WAREHOUSE \
             -d $SF_DATABASE \
-            -s "" \  # Specify schema if needed, else leave as empty string
             -c "$SF_DATABASE.SCHEMACHANGE.CHANGE_HISTORY" \
             --create-change-history-table
 

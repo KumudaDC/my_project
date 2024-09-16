@@ -28,34 +28,35 @@ jobs:
       - name: Configure Snowflake connection
         env:
           SF_ACCOUNT: ${{ secrets.SF_ACCOUNT }}
-          SF_USERNAME: github_workflow_user
+          SF_USERNAME: ACCOUNTADMIN
           SF_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
           SF_DATABASE: ${{ secrets.SF_DATABASE }}
           SNOWFLAKE_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
         run: |
           echo "Step 1: Decoding and exporting the private key"
           echo $SNOWFLAKE_PRIVATE_KEY | base64 --decode > rsa_key.p8
+          chmod 600 rsa_key.p8  # Ensure correct permissions for the private key
           export SNOWFLAKE_PRIVATE_KEY_PATH=$(pwd)/rsa_key.p8
 
       - name: Run schemachange with key pair authentication
         env:
-          SF_ACCOUNT: ${{ secrets.SF_ACCOUNT }}
-          SF_USERNAME: github_workflow_user
-          SF_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
-          SF_DATABASE: ${{ secrets.SF_DATABASE }}
-          SF_ROLE: ${{ secrets.SF_ROLE }}
+          SNOWFLAKE_ACCOUNT: ${{ secrets.SF_ACCOUNT }}
+          SNOWFLAKE_USER: ACCOUNTADMIN
           SNOWFLAKE_PRIVATE_KEY_PATH: ${{ env.SNOWFLAKE_PRIVATE_KEY_PATH }}
+          SNOWFLAKE_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
+          SNOWFLAKE_DATABASE: ${{ secrets.SF_DATABASE }}
+          SNOWFLAKE_ROLE: ${{ secrets.SF_ROLE }}
         run: |
           echo "Step 2: Running schemachange"
           schemachange deploy \
             --config-folder . \
             -f $GITHUB_WORKSPACE/migrations \
-            -a $SF_ACCOUNT \
-            -u $SF_USERNAME \
-            -r $SF_ROLE \
-            -w $SF_WAREHOUSE \
-            -d $SF_DATABASE \
-            -c "$SF_DATABASE.SCHEMACHANGE.CHANGE_HISTORY" \
+            -a $SNOWFLAKE_ACCOUNT \
+            -u $SNOWFLAKE_USER \
+            -r $SNOWFLAKE_ROLE \
+            -w $SNOWFLAKE_WAREHOUSE \
+            -d $SNOWFLAKE_DATABASE \
+            -c "$SNOWFLAKE_DATABASE.SCHEMACHANGE.CHANGE_HISTORY" \
             --create-change-history-table
 
       - name: Clean up

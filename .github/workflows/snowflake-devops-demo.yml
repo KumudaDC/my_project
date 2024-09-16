@@ -50,15 +50,16 @@ jobs:
           SNOWFLAKE_PRIVATE_KEY_PATH: ${{ env.SNOWFLAKE_PRIVATE_KEY_PATH }}
         run: |
           echo "Step 2: Running schemachange"
-          schemachange deploy -f $GITHUB_WORKSPACE/migrations \
-                              -a $SF_ACCOUNT \
-                              -u $SF_USERNAME \
-                              -r $SF_ROLE \
-                              -w $SF_WAREHOUSE \
-                              -d $SF_DATABASE \
-                              -s "" \  # Specify the schema if needed
-                              -c "$SF_DATABASE.SCHEMACHANGE.CHANGE_HISTORY" \
-                              --create-change-history-table
+          schemachange deploy \
+            -f $GITHUB_WORKSPACE/migrations \
+            -a $SF_ACCOUNT \
+            -u $SF_USERNAME \
+            -r $SF_ROLE \
+            -w $SF_WAREHOUSE \
+            -d $SF_DATABASE \
+            -s "" \  # Specify schema if needed, else leave as empty string
+            -c "$SF_DATABASE.SCHEMACHANGE.CHANGE_HISTORY" \
+            --create-change-history-table
 
       - name: Clean up
         run: |

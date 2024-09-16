@@ -28,7 +28,7 @@ jobs:
       - name: Configure Snowflake connection
         env:
           SF_ACCOUNT: ${{ secrets.SF_ACCOUNT }}
-          SF_USERNAME: github_workflow_user
+          SF_USERNAME: ${{ secrets.SF_USERNAME }}
           SF_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
           SF_DATABASE: ${{ secrets.SF_DATABASE }}
           SNOWFLAKE_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
@@ -44,7 +44,7 @@ jobs:
       - name: Run schemachange with key pair authentication
         env:
           SNOWFLAKE_ACCOUNT: ${{ secrets.SF_ACCOUNT }}
-          SNOWFLAKE_USER: github_workflow_user
+          SNOWFLAKE_USER: ${{ secrets.SF_USERNAME }}
           SNOWFLAKE_PRIVATE_KEY_PATH: ${{ env.SNOWFLAKE_PRIVATE_KEY_PATH }}
           SNOWFLAKE_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
           SNOWFLAKE_DATABASE: ${{ secrets.SF_DATABASE }}

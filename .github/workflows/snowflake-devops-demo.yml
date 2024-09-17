@@ -24,14 +24,6 @@ jobs:
         with:
           python-version: 3.8.x
 
-      # Decode Base64-encoded Snowflake private key and create a key file
-      - name: Create Snowflake private key file
-        run: |
-          echo "${{ secrets.SNOWFLAKE_PRIVATE_KEY }}" | base64 --decode > snowflake_key.p8
-          chmod 600 snowflake_key.p8  # Secure permissions
-          ls -l snowflake_key.p8      # List the key to verify it is created
-        shell: bash
-
       # Install and run schemachange
       - name: Run schemachange
         env:
@@ -40,7 +32,7 @@ jobs:
           SF_ROLE: ${{ secrets.SF_ROLE }}
           SF_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
           SF_DATABASE: ${{ secrets.SF_DATABASE }}
-          SNOWFLAKE_PRIVATE_KEY_PATH: ${{ github.workspace }}/snowflake_key.p8
+          SNOWFLAKE_PRIVATE_KEY_PATH: ${{ secrets.SNOWFLAKE_PRIVATE_KEY_PATH }}
           SNOWFLAKE_PRIVATE_KEY_PASSPHRASE: ${{ secrets.SNOWFLAKE_PRIVATE_KEY_PASSPHRASE }}
         run: |
           echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"

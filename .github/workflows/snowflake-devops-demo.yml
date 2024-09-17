@@ -27,9 +27,7 @@ jobs:
       # Write Snowflake private key to a file
       - name: Write Snowflake private key
         run: |
-          echo "${{ secrets.SNOWFLAKE_PRIVATE_KEY }}" > $HOME/snowflake_private_key.p8
-        env:
-          SNOWFLAKE_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
+          echo "${{ secrets.SNOWFLAKE_PRIVATE_KEY }}" > snowflake_private_key.p8
 
       # Install and run schemachange
       - name: Run schemachange
@@ -39,7 +37,7 @@ jobs:
           SF_ROLE: ${{ secrets.SF_ROLE }}
           SF_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
           SF_DATABASE: ${{ secrets.SF_DATABASE }}
-          SNOWFLAKE_PRIVATE_KEY_PATH: $HOME/snowflake_private_key.p8
+          SNOWFLAKE_PRIVATE_KEY_PATH: snowflake_private_key.p8
           SNOWFLAKE_PRIVATE_KEY_PASSPHRASE: ${{ secrets.SNOWFLAKE_PRIVATE_KEY_PASSPHRASE }}
         run: |
           echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
@@ -49,11 +47,3 @@ jobs:
           
           echo "Step 2: Running schemachange"
           schemachange -f $GITHUB_WORKSPACE/migrations -a $SF_ACCOUNT -u $SF_USERNAME -r $SF_ROLE -w $SF_WAREHOUSE -d $SF_DATABASE -c $SF_DATABASE.SCHEMACHANGE.CHANGE_HISTORY --create-change-history-table
-          
-      # Check for errors
-      - name: Check for errors
-        run: |
-          if [ $? -ne 0 ]; then
-            echo "An error occurred while running schemachange."
-            exit 1
-          fi

@@ -47,7 +47,7 @@ jobs:
           echo "Step 1: Installing schemachange"
           pip install schemachange
           echo "Step 2: Running schemachange on SAMPLE_TEST"
-          schemachange -f $GITHUB_WORKSPACE/migrations -a $SF_ACCOUNT -u $SF_USERNAME -r $SF_ROLE -w $SF_WAREHOUSE -d $SF_DATABASE --vars '{"database_name": "SAMPLE_TEST"}' -c $SF_DATABASE.SCHEMACHANGE.CHANGE_HISTORY --create-change-history-table
+          schemachange -f $GITHUB_WORKSPACE/migrations -a $SF_ACCOUNT -u $SF_USERNAME -r $SF_ROLE -w $SF_WAREHOUSE -d $SF_DATABASE --vars '{"database_name": "SAMPLE_TEST", "schema_name": "schema_test"}' -c $SF_DATABASE.SCHEMACHANGE.CHANGE_HISTORY --create-change-history-table
       - name: Run schemachange on master branch
         if: github.ref == 'refs/heads/main'
         env:
@@ -64,4 +64,4 @@ jobs:
           echo "Step 1: Installing schemachange"
           pip install schemachange
           echo "Step 2: Running schemachange on SAMPLE_TEST_PROD"
-          schemachange -f $GITHUB_WORKSPACE/migrations -a $SF_ACCOUNT -u $SF_USERNAME -r $SF_ROLE -w $SF_WAREHOUSE -d $SF_DATABASE --vars '{"database_name": "SAMPLE_TEST_PROD"}' -c $SF_DATABASE.SCHEMACHANGE.CHANGE_HISTORY --create-change-history-table
+          schemachange -f $GITHUB_WORKSPACE/migrations -a $SF_ACCOUNT -u $SF_USERNAME -r $SF_ROLE -w $SF_WAREHOUSE -d $SF_DATABASE --vars '{"database_name": "SAMPLE_TEST_PROD", "schema_name": "schema_test"}' -c $SF_DATABASE.SCHEMACHANGE.CHANGE_HISTORY --create-change-history-table

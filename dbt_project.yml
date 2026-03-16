@@ -40,3 +40,7 @@ models:
     # Applies to all files under models/example/
     example:
       +materialized: table
+
+# This tells dbt to upload results to Snowflake after every command
+on-run-end:
+  - "{{ dbt_artifacts.upload_artifacts(results) }}"

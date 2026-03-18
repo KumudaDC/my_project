@@ -6,3 +6,5 @@ sources:
     schema: TPCH_SF1
     tables:
       - name: orders
+      - name: customer
+      - name: lineitem

@@ -1,0 +1,19 @@
+----ROLE CREATION---
+CREATE ROLE IF NOT EXISTS dbt_cortex_role;
+GRANT ROLE dbt_cortex_role TO USER KUMUDA;
+
+-- 2. Create a warehouse for dbt to use
+CREATE WAREHOUSE IF NOT EXISTS dbt_wh 
+  WITH WAREHOUSE_SIZE = 'XSMALL' 
+  AUTO_SUSPEND = 60 
+  AUTO_RESUME = TRUE;
+
+---GRANT ON WAREHOUSE---
+  
+GRANT USAGE ON WAREHOUSE dbt_wh TO ROLE dbt_cortex_role;
+
+---DB CREATION and GRANTS---
+CREATE DATABASE IF NOT EXISTS dbt_analytics;
+GRANT ALL PRIVILEGES ON DATABASE dbt_analytics TO ROLE dbt_cortex_role;
+
+GRANT DATABASE ROLE SNOWFLAKE.CORTEX_USER TO ROLE dbt_cortex_role;

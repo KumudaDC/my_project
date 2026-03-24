@@ -19,8 +19,6 @@ INSERT INTO DBT_ANALYTICS.DBT.MODEL_RECOMMENDATIONS (
     m.TOTAL_NODE_RUNTIME,
     m.MATERIALIZATION,
     m.ROWS_AFFECTED,
-
-    /* ✅ MAIN AI OUTPUT */
     SNOWFLAKE.CORTEX.COMPLETE(
         'mistral-large',
         CASE 
@@ -54,8 +52,6 @@ INSERT INTO DBT_ANALYTICS.DBT.MODEL_RECOMMENDATIONS (
                 )
         END
     ),
-
-    /* ✅ GIST OUTPUT */
     SNOWFLAKE.CORTEX.COMPLETE(
         'mistral-large',
         CASE 
